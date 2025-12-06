@@ -1,26 +1,162 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* Links */
+a {
+  @apply text-accent hover:text-white transition-colors;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+/* small utility palette */
+@layer utilities {
+  .text-accent-color { color: #22d3ee; }
+  .text-accent { color: #a855f7; }
+  .bg-accent { background-color: #a855f7; }
+  .accent-glow { box-shadow: 0 0 25px #a855f7aa; }
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+/* simple glow animation used by Hero */
+@keyframes glowPulse {
+  0%   { filter: drop-shadow(0 0 6px rgba(59,130,246,0.5)); }
+  50%  { filter: drop-shadow(0 0 18px rgba(59,130,246,0.8)); }
+  100% { filter: drop-shadow(0 0 6px rgba(59,130,246,0.5)); }
+}
+.animate-glow { animation: glowPulse 3s ease-in-out infinite; }
+
+/* theme variables */
+:root{
+  --bg-dark: #050505;
+  --accent: #a855f7;
+  --primary: #6366f1;
+}
+
+/* film grain overlay (subtle) */
+.film-grain {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9998;
+  opacity: 0.04;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+}
+
+/* ---- Disabled/removed aurora visuals (kept classnames but neutralized) ---- */
+.aurora-wrap { display: none; }   /* disabled - we removed aurora visuals */
+
+/* ---- Cursor (keeps custom cursor) ---- */
+.cursor-dot, .cursor-outline {
+  position: fixed;
+  top: 0;
+  left: 0;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9999;
+  mix-blend-mode: difference;
+}
+.cursor-dot {
+  width: 8px; height: 8px; background: #fff; transition: transform .12s ease;
+}
+.cursor-outline {
+  width: 40px; height: 40px; border: 1px solid rgba(255,255,255,0.4);
+  transition: width .18s ease, height .18s ease, background-color .18s ease;
+}
+@media (hover: none) { .cursor-dot, .cursor-outline { display: none; } }
+
+/* ---- Magnetic hover helper ---- */
+.magnetic { display: inline-block; will-change: transform; transform: translate3d(0,0,0); }
+.hover-trigger { cursor: none; }
+
+/* ---- HORIZONTAL / SCROLL BACKGROUND (blurred text) ---- */
+/* wrapper that contains the scrolling words (this element should be absolute & behind About) */
+.blurred-scroll-text {
+  filter: blur(5px);            /* slight blur for background */
+  opacity: 0.48;                /* visibility — increase if too faint */
+  pointer-events: none;
+  will-change: transform;
+  mix-blend-mode: screen;       /* helps the text pop on dark backgrounds */
+  display: flex;
+  align-items: center;
+  gap: 4rem;
+  padding-left: 8vw;
+}
+
+/* the large words that scroll horizontally */
+.scroll-word {
+  font-size: 18vw;
+  font-weight: 800;
+  line-height: 0.82;
+  white-space: nowrap;
+  -webkit-text-stroke: 3px rgba(255,255,255,0.12);
+  color: rgba(255,255,255,0.06);   /* subtle fill so it's not pure outline */
+  user-select: none;
+  text-rendering: optimizeLegibility;
+  text-shadow: 0 0 30px rgba(255,255,255,0.04);
+  transform: translateZ(0);
+}
+
+/* responsive tuning */
+@media (max-width: 1024px) {
+  .scroll-word { font-size: 28vw; -webkit-text-stroke: 2.5px rgba(255,255,255,0.11); }
+  .blurred-scroll-text { padding-left: 6vw; gap: 2rem; opacity: 0.5; filter: blur(4px); }
+}
+@media (max-width: 640px) {
+  .scroll-word { font-size: 36vw; -webkit-text-stroke: 2px rgba(255,255,255,0.10); }
+  .blurred-scroll-text { padding-left: 4vw; gap: 1.25rem; opacity: 0.55; filter: blur(3px); }
+}
+
+/* ---- Fine tuning for the big-type / horizontal helpers (kept for compatibility) ---- */
+.horizontal-wrapper { width: 100%; height: 100vh; display: flex; align-items: center; overflow: visible; background-color: var(--bg-dark); }
+.horizontal-content { display: flex; align-items: center; height: 100%; gap: 3.5rem; padding-left: 8vw; will-change: transform; pointer-events: none; mix-blend-mode: screen; }
+.big-type {
+  font-size: 22vw; font-weight: 900; white-space: nowrap; line-height: 0.78;
+  -webkit-text-stroke: 4px rgba(255,255,255,0.16);
+  color: rgba(255,255,255,0.10); opacity: 0.85;
+  text-shadow: 0 0 30px rgba(168,85,247,0.06), 0 0 50px rgba(59,130,246,0.04);
+}
+@media (max-width: 768px) {
+  .big-type { font-size: 40vw; -webkit-text-stroke: 3px rgba(255,255,255,0.14); }
+  .horizontal-content { padding-left: 6vw; gap: 2rem; }
+}
+
+/* utility for hero reveal (kept from original) */
+.hero-line { will-change: transform, opacity; }
+
+/* Arsenal card & orb tweaks */
+.tech-card {
+  perspective: 1000px;
+  backface-visibility: hidden;
+  will-change: transform;
+}
+
+/* orb transition */
+.tech-orb {
+  transform-origin: center;
+  will-change: transform, opacity;
+}
+
+/* increase accent on hover */
+.tech-card:hover .tech-orb {
+  opacity: 0.36;
+  transform: scale(1.05);
+}
+
+/* subtle 3D look */
+@media (hover: hover) and (pointer: fine) {
+  .tech-card { transition: transform .25s cubic-bezier(.22,.9,.36,1); }
+  .tech-card:hover { transform: translateZ(6px) rotateX(0.8deg); }
+}
+
+/* prefer-reduced-motion: stop animations and remove parallax */
+@media (prefers-reduced-motion: reduce) {
+  .tech-orb, .tech-card, .horizontal-content, .blurred-scroll-text {
+    transition: none !important;
+    animation: none !important;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* small responsive tuning */
+@media (max-width: 768px) {
+  .tech-card { width: 180px; height: 120px; padding: 1rem; }
+  .tech-orb { width: 56px; height: 56px; top: -6px; right: -6px; }
 }
