@@ -4,7 +4,7 @@ import Hero from "./components/Hero/Hero";
 import About from "./components/About/About";
 import ScrollText from "./components/ScrollText/ScrollText";
 import Arsenal from "./components/Arsenal/Arsenal";
-import BuildingViewer from "./components/BuildingViewer/BuildingViewer";
+import GamingMachineViewer from "./components/Gaming-Machine/Gaming-Machine";
 
 export default function Home() {
   return (
@@ -26,7 +26,7 @@ export default function Home() {
       </section>
       <section className="py-24 px-6">
         
-          <BuildingViewer src="/models/building.glb" />
+          <GamingMachineViewer src="/models/pacman_arcade__animation.glb" />
         
       </section>
 
