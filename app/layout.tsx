@@ -25,10 +25,10 @@ export default function RootLayout({
           selection:bg-[#a855f7]/40
         "
       >
+        {/* ScrollProvider must be typed to accept children for this to work */}
         <ScrollProvider>
           <Header />
           <CustomCursor />
-
           {children}
         </ScrollProvider>
 

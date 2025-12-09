@@ -16,20 +16,18 @@ export default function ScrollText() {
     if (!wrap || !content) return;
 
     // Timeline synced with ABOUT section scroll
-    // inside your ScrollText useLayoutEffect
-const tl = gsap.timeline({
-  scrollTrigger: {
-    trigger: "#about",
-    start: "top top",
-    end: () => {
-      const about = document.getElementById("about");
-      return "+=" + (about ? Math.max(900, about.offsetHeight - window.innerHeight) : 900);
-    },
-    scrub: 1.2,
-    invalidateOnRefresh: true,
-  }
-});
-
+    const tl = gsap.timeline({
+      scrollTrigger: {
+        trigger: "#about",
+        start: "top top",
+        end: () => {
+          const about = document.getElementById("about");
+          return "+=" + (about ? Math.max(900, about.offsetHeight - window.innerHeight) : 900);
+        },
+        scrub: 1.2,
+        invalidateOnRefresh: true,
+      }
+    });
 
     tl.to(content, {
       x: () => -(content.scrollWidth - window.innerWidth),
@@ -42,7 +40,10 @@ const tl = gsap.timeline({
       ease: "none",
     }, 0);
 
-    return () => tl.kill();
+    // FIX: Wrap in braces { } to ensure the function returns void
+    return () => {
+      tl.kill();
+    };
   }, []);
 
   return (

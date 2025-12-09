@@ -10,16 +10,18 @@ gsap.registerPlugin(ScrollTrigger);
 
 export default function ScrollProvider({ children }: { children: React.ReactNode }) {
   const rafId = useRef<number | null>(null);
-  const lenisRef = useRef<any | null>(null);
+  const lenisRef = useRef<Lenis | null>(null);
 
   useEffect(() => {
     const lenis = new Lenis({
       duration: 1.2,
-      easing: t => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-      smooth: true,
-      direction: 'vertical',
-      gestureDirection: 'vertical',
-      smoothTouch: false
+      easing: (t: number) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      // FIX: 'direction' is renamed to 'orientation' in newer Lenis versions
+      orientation: 'vertical', 
+      // FIX: 'gestureDirection' is renamed to 'gestureOrientation'
+      gestureOrientation: 'vertical',
+      // FIX: 'smoothTouch' is removed. Use 'smoothWheel: true' for standard smoothing.
+      smoothWheel: true,
     });
     lenisRef.current = lenis;
 
@@ -35,7 +37,6 @@ export default function ScrollProvider({ children }: { children: React.ReactNode
     });
 
     return () => {
-      // cancel rAF, then destroy lenis and kill ScrollTriggers
       if (rafId.current) cancelAnimationFrame(rafId.current);
       lenis.destroy();
       ScrollTrigger.getAll().forEach(t => t.kill());

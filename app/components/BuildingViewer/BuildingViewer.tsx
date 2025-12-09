@@ -33,17 +33,19 @@ function BuildingModel({
         
         // Optimize material settings
         if (mesh.material) {
-          const material = mesh.material as THREE.Material;
+          // Cast to MeshStandardMaterial to access roughness/metalness without 'any'
+          const material = mesh.material as THREE.MeshStandardMaterial;
+          
           material.precision = "lowp";
           material.depthWrite = true;
           material.depthTest = true;
           
           // Disable expensive features
           if ("roughness" in material) {
-            (material as any).roughness = 1;
+            material.roughness = 1;
           }
           if ("metalness" in material) {
-            (material as any).metalness = 0;
+            material.metalness = 0;
           }
         }
       }
@@ -85,7 +87,10 @@ const SceneContent = React.memo(function SceneContent({
       orb.enabled = !e.value;
     };
 
-    const dispatcher = tf as unknown as THREE.EventDispatcher;
+    // FIX: Replaced <any> with a specific event map type
+    // This tells TypeScript: "This dispatcher handles a 'dragging-changed' event of type DragEvent"
+    const dispatcher = tf as unknown as THREE.EventDispatcher<{ "dragging-changed": DragEvent }>;
+    
     dispatcher.addEventListener("dragging-changed", onDragChanged);
     return () => dispatcher.removeEventListener("dragging-changed", onDragChanged);
   }, []);
