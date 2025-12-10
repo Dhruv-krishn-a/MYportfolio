@@ -32,8 +32,6 @@ export default function RootLayout({
           {children}
         </ScrollProvider>
 
-        {/* Noise overlay */}
-        <div className="pointer-events-none fixed inset-0 opacity-[0.03] bg-[url('/noise.png')]"></div>
       </body>
     </html>
   );

@@ -1,3 +1,4 @@
+// components/Gaming-Machine/Gaming-Machine.tsx
 "use client";
 
 import React, { Suspense, useRef, useCallback, useEffect, useState, useMemo } from "react";
@@ -10,8 +11,8 @@ import {
   PerspectiveCamera,
   Environment,
   ContactShadows,
-  Float,
-  Stars
+  Float
+  // Removed "Stars" import
 } from "@react-three/drei";
 import * as THREE from "three";
 import { motion } from "framer-motion";
@@ -30,7 +31,8 @@ export default function GamingMachineViewer({ src = "/models/pacman_arcade__anim
   return (
     <motion.section 
       id="portfolio-viewer"
-      className="relative w-full h-[80vh] bg-gradient-to-b from-[#050508] to-[#101015] overflow-hidden"
+      // UPDATED: Changed background to bg-transparent
+      className="relative w-full h-[80vh] bg-transparent overflow-hidden"
       initial={{ opacity: 0, y: 100 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-100px" }}
@@ -46,6 +48,7 @@ export default function GamingMachineViewer({ src = "/models/pacman_arcade__anim
       <Canvas
         shadows
         dpr={[1, 2]} 
+        // alpha: true is critical here, it makes the 3D canvas background transparent
         gl={{ antialias: true, alpha: true, toneMapping: THREE.ACESFilmicToneMapping }}
         style={{ width: "100%", height: "100%" }}
       >
@@ -70,7 +73,6 @@ function SceneContent({ src, modelRef }: { src: string; modelRef: React.MutableR
 
   const gltf = useGLTF(src) as GLTF;
 
-  // Clone + normalize the scene inside useMemo so it is constructed only once
   const scene = useMemo(() => {
     const cloned = gltf.scene.clone(true);
 
@@ -79,23 +81,18 @@ function SceneContent({ src, modelRef }: { src: string; modelRef: React.MutableR
     const center = box.getCenter(new THREE.Vector3());
     const maxDim = Math.max(size.x, size.y, size.z);
 
-    // adjusted scale
     const scaleFactor = maxDim > 0 ? 3.0 / maxDim : 1;
     cloned.scale.setScalar(scaleFactor);
 
     const offset = center.clone().multiplyScalar(scaleFactor);
     cloned.position.sub(offset);
-
-    // small vertical lift so object sits nicely on shadow plane
     cloned.position.y += 0.5;
 
-    // store load info on userData so we don't need to set React state inside effect
     (cloned.userData as { __loaded?: { size: THREE.Vector3; scaleFactor: number; center: THREE.Vector3 } }).__loaded = { size, scaleFactor, center };
 
     return cloned;
   }, [gltf.scene]);
 
-  // Attach animations to the cloned scene
   const { actions } = useAnimations(gltf.animations, scene);
 
   useEffect(() => {
@@ -106,7 +103,6 @@ function SceneContent({ src, modelRef }: { src: string; modelRef: React.MutableR
     }
   }, [actions]);
 
-  // expose scene via ref (safe to mutate ref)
   useEffect(() => {
     modelRef.current = scene as THREE.Group;
   }, [scene, modelRef]);
@@ -188,7 +184,6 @@ function SceneContent({ src, modelRef }: { src: string; modelRef: React.MutableR
     setLastClicked(result);
   }, []);
 
-  // read loaded info from scene.userData for display
   const loadedInfo = (scene.userData as { __loaded?: { size: THREE.Vector3; scaleFactor: number } }).__loaded;
 
   return (
@@ -197,7 +192,8 @@ function SceneContent({ src, modelRef }: { src: string; modelRef: React.MutableR
       <ambientLight intensity={0.5} />
       <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} intensity={1} castShadow />
       <Environment preset="city" /> 
-      <Stars radius={100} depth={50} count={5000} factor={4} saturation={0} fade speed={1} />
+      
+      {/* UPDATED: Removed <Stars /> component here */}
 
       <Suspense fallback={<Html center><div className="text-white">Loading...</div></Html>}>
         <Float 
@@ -244,9 +240,8 @@ function SceneContent({ src, modelRef }: { src: string; modelRef: React.MutableR
          </Html>
       )}
 
-      {/* small debug overlay showing computed size/scale if available */}
       {loadedInfo && (
-        <Html position={[-2, 1.5, 0]} center>
+        <Html position={[-3, 1.5, 0]} center>
           <div className="bg-black/60 px-3 py-2 rounded-md border border-white/6 backdrop-blur-md text-white text-xs">
             <div>Size: {loadedInfo.size.x.toFixed(2)}, {loadedInfo.size.y.toFixed(2)}, {loadedInfo.size.z.toFixed(2)}</div>
             <div>Scale: {loadedInfo.scaleFactor.toFixed(3)}</div>

@@ -1,3 +1,4 @@
+// components/Arsenal/Arsenal.tsx
 "use client";
 
 import { useLayoutEffect, useRef } from "react";
@@ -39,6 +40,7 @@ const row2: TechItem[] = [
   { name: "Git", type: "VCS", icon: <SiGit />, color: "#F05032" },
 ];
 
+// Quadrupling data to ensure seamless scrolling on large screens
 const doubleRow1 = [...row1, ...row1, ...row1, ...row1];
 const doubleRow2 = [...row2, ...row2, ...row2, ...row2];
 
@@ -49,11 +51,7 @@ export default function Arsenal() {
   const bgTextRef = useRef<HTMLDivElement | null>(null);
 
   useLayoutEffect(() => {
-    // CRITICAL FIX: Use gsap.context()
-    // This allows GSAP to "revert" all changes (like pinning wrappers)
-    // before React tries to unmount the component.
     const ctx = gsap.context(() => {
-      
       const section = sectionRef.current;
       const r1 = row1Ref.current;
       const r2 = row2Ref.current;
@@ -61,53 +59,58 @@ export default function Arsenal() {
 
       if (!section || !r1 || !r2) return;
 
-      const getScrollDist = (el: HTMLDivElement) => el.scrollWidth - window.innerWidth;
-      const cards = gsap.utils.toArray(".tech-card");
+      // Select cards specifically within this section to avoid conflicts
+      const cards = gsap.utils.toArray(".tech-card") as HTMLElement[];
 
       const tl = gsap.timeline({
         scrollTrigger: {
           trigger: section,
           start: "top top",
-          end: "+=250%",
-          scrub: 1,      
+          end: "+=200%", // Scroll distance
+          scrub: 1.5,    // Slightly softer scrub for smoother feel
           pin: true,
           invalidateOnRefresh: true,
           onUpdate: (self) => {
-            const skew = self.getVelocity() / -250; 
+            // Add skew effect based on scroll velocity
+            const skew = self.getVelocity() / -200; 
             gsap.to(cards, {
               skewX: skew,
               overwrite: "auto",
-              duration: 0.2,
-              ease: "power2.out"
+              duration: 0.1, // Quick response
             });
           }
         },
       });
 
-      // 1. Top Row
+      // --- ROW 1: Moves Left ---
+      // Moves from 0% to -50% of its total width
       tl.fromTo(r1, 
-        { x: 0 }, 
-        { x: () => -getScrollDist(r1), ease: "none" }, 
+        { xPercent: 0 }, 
+        { xPercent: -50, ease: "none" }, 
         0
       );
 
-      // 2. Bottom Row
+      // --- ROW 2: Moves Right ---
+      // Starts at -50% (shifted left) and moves to 0% (shifted right)
+      // This creates the "Right Movement" effect without gaps
       tl.fromTo(r2, 
-        { x: () => -getScrollDist(r2) }, 
-        { x: 0, ease: "none" }, 
+        { xPercent: -50 }, 
+        { xPercent: 0, ease: "none" }, 
         0
       );
 
-      // 3. Background Text Parallax
+      // --- PARALLAX TEXT ---
+      // Moves slightly up/down against the scroll
       if (bgText) {
-        tl.fromTo(bgText, { y: 0 }, { y: -100, ease: "none" }, 0);
+        tl.fromTo(bgText, 
+          { y: 150 }, 
+          { y: -150, ease: "none" }, 
+          0
+        );
       }
 
-    }, sectionRef); // Scope context to this section
+    }, sectionRef);
 
-    // CLEANUP
-    // This removes the ScrollTrigger and unwraps the pinned element
-    // so React finds the DOM exactly as it expects.
     return () => ctx.revert(); 
   }, []);
 
@@ -115,24 +118,23 @@ export default function Arsenal() {
     <section
       ref={sectionRef}
       id="skills"
-      className="relative w-full h-screen bg-[#050505] overflow-hidden flex flex-col justify-center py-20 z-10"
+      className="relative w-full h-screen overflow-hidden flex flex-col justify-center py-20 z-10"
     >
-      {/* --- BACKGROUND FX --- */}
-      <div className="absolute inset-0 opacity-[0.05] bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]" />
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,#050505_100%)] pointer-events-none" />
 
-      {/* Parallax Background Text */}
+      {/* --- PARALLAX BACKGROUND TEXT --- */}
+      {/* z-0 ensures it is behind the cards */}
       <div 
         ref={bgTextRef} 
-        className="absolute inset-0 flex items-center justify-center pointer-events-none select-none opacity-[0.03]"
+        className="absolute inset-0 flex items-center justify-center pointer-events-none select-none z-0"
       >
-        <h2 className="text-[25vw] font-black text-white tracking-tighter scale-y-150">
+        <h2 className="text-[23vw] font-black text-white/5 tracking-tighter scale-y-150 whitespace-nowrap">
           ARSENAL
         </h2>
       </div>
 
-      {/* --- CONTENT --- */}
-      <div className="z-10 flex flex-col gap-12 md:gap-16 rotate-[-3deg] scale-105 origin-center will-change-transform">
+      {/* --- CARDS CONTAINER --- */}
+      {/* z-10 ensures cards slide OVER the text */}
+      <div className="z-10 flex flex-col gap-10 md:gap-14 rotate-[-3deg] scale-105 origin-center will-change-transform">
         
         {/* Row 1 */}
         <div className="w-full">
@@ -176,7 +178,7 @@ function Card({ tech, index }: { tech: TechItem; index: number }) {
         group-hover:border-white/10
         group-hover:shadow-2xl
       "
-      style={{ boxShadow: `0 0 0 1px rgba(255,255,255,0.03)` }} 
+      style={{ boxShadow: "0 0 0 1px rgba(255,255,255,0.03)" }} 
       >
         
         {/* Hover Glow Gradient */}
@@ -197,7 +199,8 @@ function Card({ tech, index }: { tech: TechItem; index: number }) {
           </div>
           
           <span className="font-mono text-xs text-white/20 group-hover:text-white/40 transition-colors">
-            {index < 9 ? `0${index + 1}` : index + 1}
+             {/* Keeps numbers 01-07 repeating neatly */}
+            {String((index % 7) + 1).padStart(2, '0')}
           </span>
         </div>
 

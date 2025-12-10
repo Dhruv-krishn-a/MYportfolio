@@ -1,3 +1,4 @@
+//components/ScrollText/ScrollText.tsx
 "use client";
 
 import { useLayoutEffect, useRef } from "react";
